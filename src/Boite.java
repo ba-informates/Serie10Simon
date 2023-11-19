@@ -102,7 +102,7 @@ class Lettre extends Courrier {
 /* Une classe pour repr'esenter les publicit'es
  */
 
-class Publicite extends Courrier {
+class Publicite extends Courrier implements CourrierCommercial {
 
     public Publicite(double poids, boolean express, String adresse){
         super(poids, express, adresse);
@@ -110,7 +110,7 @@ class Publicite extends Courrier {
 
     // redéfinit affranchirNormal()
     protected double affranchirNormal() {
-        return poids/1000.0 * 5.0;
+        return CourrierCommercial.super.affranchirCommercial(poids/1000.0 * 5.0 * 0.80, 0.20);
     }
 
 
@@ -158,6 +158,26 @@ class Colis extends Courrier {
         return s;
     }
 
+
+}
+
+interface CourrierCommercial {
+
+    default double affranchirCommercial(double montant, double reduction) {
+        return montant *= (1 - reduction);
+    }
+
+}
+
+class ColisCommercial extends Colis implements CourrierCommercial {
+
+    public ColisCommercial(double poids, boolean express, String adresse, double volume) {
+        super(poids, express, adresse, volume);
+    }
+
+    public double affranchirNormal() {
+        return CourrierCommercial.super.affranchirCommercial(super.affranchirNormal(), 0.15);
+    }
 
 }
 
@@ -230,7 +250,6 @@ class Boite {
 class PosteCommercial {
 
     public static void  main(String args[]) {
-		/*
 		//Cr'eation d'une boite-aux-lettres
 		Boite boite = new Boite(30);
 
@@ -254,7 +273,6 @@ class PosteCommercial {
 
 		System.out.println("La boite contient " + boite.courriersInvalides()
 						   + " courriers invalides");
-		*/
     }
 
 }
