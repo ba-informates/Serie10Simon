@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 abstract class Employe {
 
     private String name;
@@ -7,61 +9,141 @@ abstract class Employe {
 
     abstract double calculerSalaire();
 
-    String getNom() {
-        return "L'employé " + firstName + " " + name;
+    @Override
+    public String toString() {
+        return this.firstName + " " + name;
     }
 
-    public Employe(String name, String firstName, int age, String joinDate) {
-        this.name = name;
+    String getNom() {
+        return "L'employé " + this;
+    }
+
+    public Employe(String firstName, String name, int age, String joinDate) {
         this.firstName = firstName;
+        this.name = name;
         this.age = age;
         this.joinDate = joinDate;
     }
 }
 
+class EmployePayeAuCA extends Employe {
+    final private int ca;
+    public EmployePayeAuCA (String firstName, String name, int age, String joinDate, int ca) {
+        super(firstName, name, age, joinDate);
+        this.ca = ca;
+    }
+    double calculerSalaire() {
+        return this.ca * 0.2 + this.getSalaireSupplementaire();
+    }
+
+    protected int getSalaireSupplementaire () { return 0; }
+}
+
 class Vendeur extends EmployePayeAuCA {
-    public Vendeur(String name, String firstName, int age, String joinDate, int ca) {
-        super(name, firstName, age, joinDate, ca);
+    public Vendeur(String firstName, String name, int age, String joinDate, int ca) {
+        super(firstName, name, age, joinDate, ca);
+    }
+    @Override
+    String getNom() {
+        return "Le vendeur " + this;
+    }
+
+    @Override
+    protected int getSalaireSupplementaire () {
+        return 400;
     }
 }
 
 class Representant extends EmployePayeAuCA {
-    public Representant(String name, String firstName, int age, String joinDate, int ca) {
-        super(name, firstName, age, joinDate, ca);
+    public Representant(String firstName, String name, int age, String joinDate, int ca) {
+        super(firstName, name, age, joinDate, ca);
     }
-}
-
-class EmployePayeAuCA extends Employe {
-    private int ca;
-    public EmployePayeAuCA (String name, String firstName, int age, String joinDate, int ca) {
-        super(name, firstName, age, joinDate);
-        this.ca = ca;
+    @Override
+    String getNom() {
+        return "Le représentant " + this;
     }
-    double calculerSalaire() {
-        return this.ca * 0.2 + 400;
+    @Override
+    protected int getSalaireSupplementaire () {
+        return 800;
     }
 }
 
 class Technicien extends Employe {
     private int unitCount;
-    public Technicien(String name, String firstName, int age, String joinDate, int unitCount) {
-        super(name, firstName, age, joinDate);
+    public Technicien(String firstName, String name, int age, String joinDate, int unitCount) {
+        super(firstName, name, age, joinDate);
         this.unitCount = unitCount;
     }
     double calculerSalaire () {
         return this.unitCount * 5;
     }
+    @Override
+    String getNom() {
+        return "Le technicien " + this;
+    }
 }
 
 class Manutentionnaire extends Employe {
-    private int hourCount;
-    public Manutentionnaire(String name, String firstName, int age, String joinDate, int hourCount) {
-        super(name, firstName, age, joinDate);
+    protected int hourCount;
+    public Manutentionnaire(String firstName, String name, int age, String joinDate, int hourCount) {
+        super(firstName, name, age, joinDate);
         this.hourCount = hourCount;
     }
     double calculerSalaire() {
         return this.hourCount * 65;
     }
+    @Override
+    String getNom() {
+        return "Le manutentionnaire " + this;
+    }
+}
+
+interface EmployeARisque {
+    default double calculerSalaire (double salaireMensuel, int primeMensuelle) {
+        return salaireMensuel + primeMensuelle;
+    }
+}
+
+class TechnARisque extends Technicien implements EmployeARisque {
+    public TechnARisque (String firstName, String name, int age, String joinDate, int hourCount) {
+        super(firstName, name, age, joinDate, hourCount);
+    }
+    double calculerSalaire () {
+        return EmployeARisque.super.calculerSalaire(super.calculerSalaire(), 400);
+    }
+}
+
+class ManutARisque extends Manutentionnaire implements EmployeARisque {
+    public ManutARisque (String firstName, String name, int age, String joinDate, int hourCount) {
+        super(firstName, name, age, joinDate, hourCount);
+    }
+    double calculerSalaire () {
+        return EmployeARisque.super.calculerSalaire(super.calculerSalaire(), 300);
+    }
+}
+
+class Personnel {
+
+    private ArrayList<Employe> employes = new ArrayList<>();
+
+    public void ajouterEmploye(Employe employe) {
+        this.employes.add(employe);
+    }
+
+    public void afficherSalaires() {
+        for (Employe employe : this.employes) {
+            System.out.println(employe.getNom() + " gagne " + employe.calculerSalaire());
+        }
+    }
+
+    public double salaireMoyen() {
+        double sum = 0;
+        for (Employe employe: this.employes) {
+            sum += employe.calculerSalaire();
+        }
+        return sum/this.employes.toArray().length;
+    }
+
 }
 
 public class Salaires {
